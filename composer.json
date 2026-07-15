@@ -1,0 +1,56 @@
+{
+    "name": "jeffersongoncalves/plump-cli",
+    "description": "CLI tool to query PHP package quality scores from Plumb (plumbphp.dev): show scores, trigger scans, view scan history.",
+    "keywords": ["cli", "plumb", "composer", "quality", "api"],
+    "homepage": "https://github.com/jeffersongoncalves/plump-cli",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jefferson Goncalves",
+            "email": "jeffersongoncalves@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^7.10",
+        "jeffersongoncalves/laravel-zero-self-update": "^1.0",
+        "laravel-zero/framework": "^12.0",
+        "laravel/pint": "^1.25",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^3.8|^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "build": ["php plump app:build plump"],
+        "lint": "./vendor/bin/pint",
+        "test:lint": "./vendor/bin/pint --test",
+        "test:unit": "./vendor/bin/pest --parallel",
+        "test": [
+            "@test:unit",
+            "@test:lint"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "bin": ["builds/plump"]
+}

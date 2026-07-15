@@ -1,0 +1,107 @@
+name: Release
+
+# Manual release. CI builds the PHAR FIRST, commits it, and only THEN creates
+# the tag on that exact commit. This guarantees the tag (which is immutable)
+# always points at a commit whose embedded binary already carries the released
+# version — so the dist Packagist/self-update serves is correct from the start.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. 1.1.2 (no leading v)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Validate version
+        run: |
+          VERSION="$(echo '${{ github.event.inputs.version }}' | tr -d ' \t\r\n' | sed 's/^v//')"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid version '$VERSION' (expected X.Y.Z)"; exit 1
+          fi
+          if git rev-parse "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "::error::Tag $VERSION already exists"; exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip
+          ini-values: error_reporting=E_ALL, phar.readonly=Off
+          tools: composer:v2
+          coverage: none
+
+      - name: Install the dependencies
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-suggest --no-scripts --ansi -v --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix --ignore-platform-req=ext-sockets
+
+      # version.txt is the single source of truth for the embedded version.
+      - name: Write version.txt
+        run: echo "$VERSION" > version.txt
+
+      # Build the binary BEFORE the tag exists. This is the whole point.
+      - name: Build the PHAR (embeds $VERSION)
+        run: php plump app:build plump --build-version="$VERSION" -v
+
+      - name: Generate release notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X POST "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="$VERSION" -f target_commitish=main --jq .body > RELEASE_NOTES.md
+          {
+            echo "body<<__NOTES_EOF__"
+            cat RELEASE_NOTES.md
+            echo "__NOTES_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG
+        uses: stefanzweifel/changelog-updater-action@v1
+        with:
+          release-date: ${{ github.event.repository.updated_at }}
+          release-notes: ${{ steps.notes.outputs.body }}
+          latest-version: ${{ env.VERSION }}
+          compare-url-target-revision: main
+
+      # Single commit: binary + version + changelog. The tag points here.
+      - name: Commit, tag and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version.txt builds/plump CHANGELOG.md
+          git commit -m "Release $VERSION"
+          git tag "$VERSION"
+          git push origin main
+          git push origin "$VERSION"
+
+      # Asset name must stay plump.phar (self-update downloads it).
+      # Same bytes as the committed builds/plump — just the release name.
+      - name: Prepare the PHAR asset
+        run: cp builds/plump builds/plump.phar
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes-file RELEASE_NOTES.md \
+            builds/plump.phar

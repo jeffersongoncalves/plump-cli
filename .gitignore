@@ -1,0 +1,10 @@
+/vendor
+/.idea
+/.vscode
+/.vagrant
+.phpunit.result.cache
+.phpunit.cache
+.env
+/.claude/settings.local.json
+/tests/tmp
+/.box_dump
