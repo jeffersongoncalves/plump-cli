@@ -1,3 +1,9 @@
+<div class="filament-hidden">
+
+![plump-cli](https://raw.githubusercontent.com/jeffersongoncalves/plump-cli/main/art/jeffersongoncalves-plump-cli.png)
+
+</div>
+
 # plump-cli
 
 A small CLI to query [Plumb](https://plumbphp.dev) — mechanically-scored Security, Maintenance,
