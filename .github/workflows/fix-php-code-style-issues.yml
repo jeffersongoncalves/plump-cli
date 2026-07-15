@@ -2,6 +2,8 @@ name: Fix PHP code style issues
 
 on:
   push:
+    branches:
+      - main
     paths:
       - '**.php'
 
@@ -13,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref }}
 
