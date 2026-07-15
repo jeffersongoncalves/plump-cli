@@ -33,7 +33,7 @@
         }
     },
     "scripts": {
-        "build": ["php plump app:build plump"],
+        "build": "php plump app:build plump --build-version=\"$(git describe --tags --abbrev=0 2>/dev/null || echo unreleased)\"",
         "lint": "./vendor/bin/pint",
         "test:lint": "./vendor/bin/pint --test",
         "test:unit": "./vendor/bin/pest --parallel",

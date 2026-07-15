@@ -3,6 +3,9 @@ name: builds
 on:
   push:
     branches: [main]
+  workflow_run:
+    workflows: ["Update Changelog"]
+    types: [completed]
 
 permissions: write-all
 
@@ -13,22 +16,23 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Releases are built by release.yml (which already commits the PHAR before
-    # tagging). Skip the rebuild here so a "Release X" push doesn't add a
-    # redundant "Generate build" commit after the tag.
-    if: ${{ !startsWith(github.event.head_commit.message, 'Release ') }}
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ github.ref }}
+          # workflow_run fires from release events where head_branch is the
+          # tag name. We always want the branch head instead so the rebuilt
+          # PHAR lands on main, not on the tag ref.
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
 
       # version.txt is the single source of truth for the embedded version
-      # (bumped to the release tag by release.yml). Between releases this keeps
-      # builds/plump on main current; releases themselves are built and
-      # tagged by release.yml so the tag always embeds the right version.
+      # (bumped to the release tag by update-changelog.yml). Reading it here
+      # avoids the `git describe` / tag-move / Packagist-cache races: the
+      # release tag is created on a commit whose binary already embeds the
+      # right version, so the dist Packagist serves is correct from the start.
       - name: Resolve build version
         id: version
         run: |
@@ -58,4 +62,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Generate build
-          branch: ${{ github.ref_name }}
+          branch: ${{ github.event_name == 'workflow_run' && 'main' || github.ref_name }}
