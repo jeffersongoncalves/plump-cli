@@ -4,3 +4,7 @@
 BACKERS.md export-ignore
 CONTRIBUTING.md export-ignore
 CHANGELOG.md export-ignore
+/tests export-ignore
+/.phpunit.cache export-ignore
+phpunit.xml.dist export-ignore
+box.json export-ignore
