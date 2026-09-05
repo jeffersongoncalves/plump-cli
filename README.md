@@ -6,6 +6,8 @@
 
 # plump-cli
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/jeffersongoncalves)
+
 A small CLI to query [Plumb](https://plumbphp.dev) — mechanically-scored Security, Maintenance,
 and Ecosystem Health for PHP/Composer packages — directly from the terminal. Show a package's
 scores, trigger a fresh scan, or browse scan history. No API key required.
