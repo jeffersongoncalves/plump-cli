@@ -12,6 +12,13 @@ scores, trigger a fresh scan, or browse scan history. No API key required.
 
 Built with [Laravel Zero](https://laravel-zero.com).
 
+<p align="center">
+  <a href="https://github.com/jeffersongoncalves/plump-cli/actions"><img src="https://github.com/jeffersongoncalves/plump-cli/actions/workflows/run-tests.yml/badge.svg" alt="Tests" /></a>
+  <a href="https://packagist.org/packages/jeffersongoncalves/plump-cli"><img src="https://img.shields.io/packagist/dt/jeffersongoncalves/plump-cli" alt="Total Downloads" /></a>
+  <a href="https://github.com/jeffersongoncalves/plump-cli/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jeffersongoncalves/plump-cli" alt="License" /></a>
+  <img src="https://img.shields.io/badge/php-%3E%3D8.2-8892BF" alt="PHP 8.2+" />
+</p>
+
 ## Installation
 
 ```bash
